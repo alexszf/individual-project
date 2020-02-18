@@ -84,12 +84,22 @@ def func(params, target_audio, clean_audio):
     #return distance
     return compute_distance(new_audio, target_audio)
 
-audio_withEQ = readAudioWithEQ("../recordings/sample_ffmpeg.wav")
+#read in the audio with no effect
 audio_clean = readAudio("../recordings/sample_ffmpeg.wav")
+#read in the audio and add a single EQ
+audio_withEQ = readAudioWithEQ("../recordings/sample_ffmpeg.wav")
+
 audio_withEQ = audio_withEQ[96000:144000]
 audio_clean = audio_clean[96000:144000]
 
+params = [2000]
+result = scipy.optimize.minimize(func, params,
+                                 args=(audio_withEQ, audio_clean),
+                                 method='nelder-mead',
+                                 options={'disp':True})
 
+#optimiser terminates with a supposed value of 248 at freq=1987Hz
+print(result.x)
 
 
 #frequencies = np.arange(3000, step=5)
