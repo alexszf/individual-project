@@ -12,7 +12,7 @@ def readAudioWithEQ(filename, params):
     try:
         input_audio, err = (ffmpeg
                     .input(filename)
-                    .filter("flanger", speed=params[0])
+                    .filter('acompressor', ratio=params[0], threshold=params[1])
                     .output('-', format='s16le', acodec='pcm_s16le', ac=1, ar='48k')
                     .overwrite_output()
                     .run(capture_stdout=True, capture_stderr=True)
@@ -45,10 +45,11 @@ def loss(params, target_audio, fn_clean, nsamples):
     return l
 
 ####################################################################
-# Define target
+# Define target audio
 
-fla_s_true = 8
-target_audio = readAudioWithEQ("test1.wav", np.array( [fla_s_true] ))
+ratio_true = 4
+thresh_true = 0.5
+target_audio = readAudioWithEQ("test1.wav", np.array( [ratio_true, thresh_true] ))
 target_audio = target_audio[0:2*48000]
 
 # check that the spectrogram is as expected
@@ -60,35 +61,35 @@ plt.colorbar()
 plt.show()
 
 # sanity check of the loss function (manual)
-fla_s_init = 7.95
+ratio_init = 8
+thresh_init = 0.25
 
 print("initial loss at first guess")
-tmp = loss(np.array([fla_s_init]), target_audio, "test1.wav", 2*48000)
+tmp = loss(np.array([ratio_init, thresh_init]), target_audio, "test1.wav", 2*48000)
 print(tmp)
 print("loss at correct guess")
-tmp2 = loss(np.array([fla_s_true]), target_audio, "test1.wav", 2*48000)
+tmp2 = loss(np.array([ratio_true, thresh_true]), target_audio, "test1.wav", 2*48000)
 print(tmp2)
 
-# ... test the full range of speeds; i.e. a slice of the loss function
-speed_test = np.arange(0.1, 10, 0.1)
+# ... test the full range of ratios; i.e. a slice of the loss function
+ratio_test = np.arange(1, 10, 0.1)
 #test_fs = np.arange(100,10000)
-test_loss = np.zeros((speed_test.shape[0],))
+test_loss = np.zeros((ratio_test.shape[0],))
 
-for i in range(0,speed_test.shape[0]):
-    test_loss[i] = loss(np.array([speed_test[i]]), target_audio, "test1.wav", 2*48000)
+for i in range(0,ratio_test.shape[0]):
+    test_loss[i] = loss(np.array([ratio_test[i], thresh_true]), target_audio, "test1.wav", 2*48000)
 
-plt.plot(speed_test, test_loss,'kx-')
-plt.title("testing for true value of 8")
-plt.xlabel("speed")
+plt.plot(ratio_test, test_loss,'kx-')
+plt.title("testing for true value of 4")
+plt.xlabel("ratio")
 plt.ylabel("loss")
 plt.show()
 
-bnds = ((0.1, 10),)
+bnds = ((1, 20), (0.00097563, 1))
 
-### ok run the optimiser on two d
-result = scipy.optimize.minimize(loss, [fla_s_init],
+# run the optimiser
+result = scipy.optimize.minimize(loss, [ratio_init, thresh_init],
                                  args=(target_audio, "test1.wav",2*48000),
-                                 method='TNC',
                                  bounds=bnds,
                                  options={'disp':True})
 

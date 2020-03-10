@@ -2,6 +2,7 @@
 import ffmpeg, numpy as np, matplotlib.pyplot as plt
 import warnings
 import scipy.optimize
+import librosa
 from scipy import signal, misc
 warnings.simplefilter("ignore", DeprecationWarning)
 from ffmpeg import Error as FFmpegError
@@ -31,10 +32,16 @@ def compute_distance(audio_1, audio_2):
     f_2, t_2, spec_2 = compute_spec(audio_2)
     return np.linalg.norm(spec_1[:-1] - spec_2[:-1])
 
+def compute_distance_mel(audio_1, audio_2):
+    spec_1 = librosa.feature.melspectrogram(audio_1, sr=48000)
+    spec_2 = librosa.feature.melspectrogram(audio_2, sr=48000)
+    distance = np.linalg.norm(spec_1 - spec_2)
+    return distance
+
 def loss(params, target_audio, fn_clean, nsamples):
     new_audio = readAudioWithEQ(fn_clean, params)
     new_audio = new_audio[0:nsamples]
-    l = compute_distance(new_audio, target_audio)
+    l = compute_distance_mel(new_audio, target_audio)
     return l
 
 ####################################################################
