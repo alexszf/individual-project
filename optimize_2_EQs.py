@@ -76,15 +76,19 @@ tmp2 = loss(np.array([g_true, f_true, g2_true, f2_true]), target_audio, "test1.w
 print(tmp2)
 
 # ... test the full range (only for g, with fixed f); i.e. a slice of the loss function
-gs_test = np.arange(-30,6)
+gs_test = np.arange(-20, 30)
 #test_fs = np.arange(100,10000)
 fs_test = 8000
+fs_test2 = 2000
 test_loss = np.zeros((gs_test.shape[0],))
+test_loss2 = np.zeros((gs_test.shape[0],))
 
 for i in range(0,gs_test.shape[0]):
-    test_loss[i] = loss(np.array([gs_test[i], fs_test, g2_true, f2_true]), target_audio, "test1.wav", 2*48000)
+    test_loss[i] = loss(np.array([gs_test[i], 8000, 5, 2000]), target_audio, "test1.wav", 2*48000)
+    test_loss2[i] = loss(np.array([-10, 8000, gs_test[i], 2000]), target_audio, "test1.wav", 2*48000)
 
 plt.plot(gs_test,test_loss,'kx-')
+plt.plot(gs_test,test_loss2,'kx-')
 plt.title("f_test=%s\nf_true=%s" % (fs_test,f_true))
 plt.xlabel("g")
 plt.ylabel("loss")
