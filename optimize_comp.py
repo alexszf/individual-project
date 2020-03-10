@@ -85,11 +85,11 @@ plt.xlabel("ratio")
 plt.ylabel("loss")
 plt.show()
 
-bnds = ((1, 20), (0.00097563, 1))
-
+bnds = ((1, 20), (0.00097563, 1.0))
 # run the optimiser
 result = scipy.optimize.minimize(loss, [ratio_init, thresh_init],
                                  args=(target_audio, "test1.wav",2*48000),
+                                 method='TNC',
                                  bounds=bnds,
                                  options={'disp':True})
 

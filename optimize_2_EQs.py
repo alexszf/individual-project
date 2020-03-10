@@ -41,7 +41,7 @@ def compute_distance_mel(audio_1, audio_2):
 def loss(params, target_audio, fn_clean, nsamples):
     new_audio = readAudioWithEQ(fn_clean, params)
     new_audio = new_audio[0:nsamples]
-    l = compute_distance_mel(new_audio, target_audio)
+    l = compute_distance(new_audio, target_audio)
     return l
 
 ####################################################################
@@ -92,12 +92,14 @@ plt.show()
 
 ### ok run the optimiser on two d
 
-bnds = ((None, None), (None, None), (None, None), (None, None))
+bnds = ((None, None), (0, None), (None, None), (0, None))
 
 result = scipy.optimize.minimize(loss, [g_init, f_init, g2_init, f2_init],
                                  args=(target_audio, "test1.wav",2*48000),
-                                 method='nelder-mead',
+                                 method='SLSQP',
+                                 bounds=bnds,
                                  options={'disp':True})
 
 print("solution: %s" % result.x)
+print("value: %s" % result.fun)
 print('done')
