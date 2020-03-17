@@ -48,7 +48,7 @@ def loss(params, target_audio, fn_clean, nsamples):
 ####################################################################
 ####################################################################
 
-# Define target 
+# Define target audio
 g_true = -10
 f_true = 8000
 g2_true = 5
@@ -96,14 +96,22 @@ plt.show()
 
 ### ok run the optimiser on two d
 
-bnds = ((None, None), (0, None), (None, None), (0, None))
+bnds = ((-900, 900), (0, 999999), (-900, 900), (0, 999999))
 
-result = scipy.optimize.minimize(loss, [g_init, f_init, g2_init, f2_init],
-                                 args=(target_audio, "test1.wav",2*48000),
-                                 method='SLSQP',
-                                 bounds=bnds,
-                                 options={'disp':True})
+results = []
 
-print("solution: %s" % result.x)
-print("value: %s" % result.fun)
+for i in range(5):
+    #inits
+    params = [np.random.randint(-20,20), np.random.randint(0,24000), np.random.randint(-20,20), np.random.randint(0,24000)]
+    result = scipy.optimize.minimize(loss, params,
+                                    args=(target_audio, "test1.wav",2*48000),
+                                    method='SLSQP',
+                                    bounds=bnds,
+                                    options={'disp':True})
+    results += [result]
+
+for result in results:
+    print("solution: %s" % result.x)
+    print("value: %s" % result.fun)
+
 print('done')
