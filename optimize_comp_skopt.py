@@ -10,11 +10,24 @@ warnings.simplefilter("ignore", DeprecationWarning)
 from ffmpeg import Error as FFmpegError
 
 #read in audio from file but add eq
-def readAudioWithEQ(filename, params):
+def readAudioWithComp(filename, params):
     try:
         input_audio, err = (ffmpeg
                     .input(filename)
-                    .filter("flanger", speed=params[0], delay=params[1])
+                    .filter("acompressor", ratio=params[0], threshold=params[1])
+                    .output('-', format='s16le', acodec='pcm_s16le', ac=1, ar='48k')
+                    .overwrite_output()
+                    .run(capture_stdout=True, capture_stderr=True)
+                    )
+    except ffmpeg.Error as e:
+        print(e.stderr)
+    read_audio = np.fromstring(input_audio, dtype=np.int16).astype(np.float16)
+    return read_audio
+
+def readAudio(filename):
+    try:
+        input_audio, err = (ffmpeg
+                    .input(filename)
                     .output('-', format='s16le', acodec='pcm_s16le', ac=1, ar='48k')
                     .overwrite_output()
                     .run(capture_stdout=True, capture_stderr=True)
@@ -40,19 +53,19 @@ def compute_distance(audio_1, audio_2):
     return np.linalg.norm(spec_1[:-1] - spec_2[:-1])
 
 def loss(x):
-    flanger_speed_true = 5
-    flanger_basedelay_true = 10
-    target_audio = readAudioWithEQ("test2.wav", np.array([flanger_speed_true, flanger_basedelay_true]))
+    comp_ratio_true = 20.0
+    comp_threshold_true = 0.02
+    target_audio = readAudioWithComp("test2.wav", np.array([comp_ratio_true, comp_threshold_true]))
     target_audio = target_audio[0:2*48000]
-    new_audio = readAudioWithEQ("test2.wav", x)
+    new_audio = readAudioWithComp("test2.wav", x)
     new_audio = new_audio[0:2*48000]
     l = compute_distance_mfcc(new_audio, target_audio)
     return l
 
-space = ((0.1, 10.0), (0.0, 30.0))
+bounds = ((1.0, 20.0), (0.000976563, 1.0))
 results = []
 for i in range(5):
-    result = gp_minimize(loss, space,
+    result = gp_minimize(loss, bounds,
                      acq_func='EI',
                      n_calls=100,
                      n_random_starts=5,

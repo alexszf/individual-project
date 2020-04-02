@@ -41,7 +41,7 @@ def compute_distance(audio_1, audio_2):
 
 def loss(x):
     g_true = -10
-    f_true = 8000
+    f_true = 1000
     target_audio = readAudioWithEQ("test2.wav", np.array([g_true, f_true]))
     target_audio = target_audio[0:2*48000]
     new_audio = readAudioWithEQ("test2.wav", x)

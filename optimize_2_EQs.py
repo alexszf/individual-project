@@ -96,7 +96,7 @@ plt.show()
 
 ### ok run the optimiser on two d
 
-bnds = ((-900, 900), (0, 999999), (-900, 900), (0, 999999))
+bnds = ((-900, 900), (0, 24000), (-900, 900), (0, 24000))
 
 results = []
 
@@ -104,7 +104,7 @@ for i in range(5):
     #inits
     params = [np.random.randint(-20,20), np.random.randint(0,24000), np.random.randint(-20,20), np.random.randint(0,24000)]
     result = scipy.optimize.minimize(loss, params,
-                                    args=(target_audio, "test1.wav",2*48000),
+                                    args=(target_audio, "test1.wav", 2*48000),
                                     method='SLSQP',
                                     bounds=bnds,
                                     options={'disp':True})
@@ -113,5 +113,4 @@ for i in range(5):
 for result in results:
     print("solution: %s" % result.x)
     print("value: %s" % result.fun)
-
 print('done')

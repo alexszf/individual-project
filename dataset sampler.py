@@ -9,9 +9,6 @@ from skopt.plots import plot_convergence
 warnings.simplefilter("ignore", DeprecationWarning)
 from ffmpeg import Error as FFmpegError
 
-filename_source = "../recordings/dataset/source.wav"
-filename_rerecording = "../recordings/dataset/home mon face s10.wav"
-
 def retrieve_audio(filename):
     try:
         input_audio, err = (ffmpeg
@@ -59,8 +56,11 @@ def take_snippet(audio, audio2, start):
 #for the purposes of testing
 start = 2000000
 
+filename_source = "../recordings/dataset/source.wav"
+filename_rerecording = "../recordings/dataset/home mon face s10.wav"
+
 source, rerecording = take_snippet(retrieve_audio(filename_source), retrieve_audio(filename_rerecording), start)
-#take a random corresponding 5 second segment from each the source recording and the rerecording
+# take a random corresponding 5 second segment from each the source recording and the rerecording
 
 print("fft", compute_distance(source, rerecording))
 print("mfcc", compute_distance_mfcc(source, rerecording))
