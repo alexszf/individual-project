@@ -29,6 +29,7 @@ def readAudioWithPipeline(filename, params):
     try:
         input_audio, err = (ffmpeg
                     .input(filename)
+                    .filter("volume", volume=params[4])
                     .filter("acompressor", ratio=params[0], threshold=params[1])
                     .filter("equalizer", f=params[2], width_type='q', width=2, gain=params[3])
                     .output('-', format='s16le', acodec='pcm_s16le', ac=1, ar='48k')
@@ -59,14 +60,13 @@ def take_snippet(audio, audio2, start):
     return audio[start:start+(48000*2)], audio2[start:start+(48000*2)]
 
 def loss(x):
-
     f_source = "snippet_original.wav"
     f_rerecording = "snippet_homemonfacings10.wav"
     target_audio = readAudio(f_source) # read first audio file in clean
     target_audio = target_audio[0:2*48000]
     new_audio = readAudioWithPipeline(f_rerecording, x) # read in the second file, adding the pipeline
     new_audio = new_audio[0:2*48000]
-    l = compute_distance_mfcc(new_audio, target_audio)
+    l = compute_distance(new_audio, target_audio)
     return l
 
 audio1 = readAudio("snippet_original.wav")
@@ -79,7 +79,8 @@ print("mfcc:", mfcc)
 bounds = ((1.0, 20.0),          #0 comp ratio
           (0.000976563, 1.0),   #1 comp threshold
           (2.0, 23998.0),       #2 eq central frequency
-          (-20.0, 20.0))        #3 eq gain
+          (-20.0, 20.0),        #3 eq gain
+          (0.0, 20.0))          #4 volume
 
 results = []
 for i in range(5):
